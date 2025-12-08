@@ -25,7 +25,9 @@ from vllm.model_executor.layers.rotary_embedding import (
     DeepseekScalingRotaryEmbedding, MRotaryEmbedding, RotaryEmbedding,
     YaRNScalingRotaryEmbedding)
 from vllm.platforms import CpuArchEnum
+from vllm.triton_utils import HAS_TRITON
 
+from vllm_ascend.ops.triton.rope import rope_forward_triton
 from vllm_ascend.platform import NPUPlatform
 from vllm_ascend.utils import (AscendDeviceType, enable_custom_op,
                                get_ascend_device_type)
@@ -66,6 +68,16 @@ def _rope_forward_oot(
         raise NotImplementedError(
             "Batched rotary embedding is currently not supported on NPU.")
     else:
+        if self.rotary_dim < self.head_size and HAS_TRITON:
+            cos = self.cos.view(-1, self.rotary_dim)
+            sin = self.sin.view(-1, self.rotary_dim)
+            q, k = rope_forward_triton(query.view(query.shape[0], -1, self.head_size),
+                                       key.view(key.shape[0], -1, self.head_size),
+                                       cos,
+                                       sin,
+                                       rope_dim=self.rotary_dim,
+                                       is_neox_style=is_neox_style)
+            return q, k
         if self.cos is not None and \
             self.sin is not None:
             # If cos and sin are generated outside, use npu_apply_rotary_pos_emb to avoid redundant calculation.
@@ -145,8 +157,8 @@ class AscendRotaryEmbedding(RotaryEmbedding):
         forward_context = get_forward_context()
         is_first_layer = forward_context.is_first_layer
         # Generate cos and sin outside layers to avoid repeated calculation.
-        if is_neox_style and self.head_size == 128 and self.cos_sin_cache.shape[
-                -1] == 128:
+        if is_neox_style and self.head_size == 128 and self.cos_sin_cache.shape[-1] == 128 or \
+            self.rotary_dim < self.head_size:
             if is_first_layer:
                 cos_sin = self.cos_sin_cache.index_select(0, positions)
                 last_dim = cos_sin.size()[-1]
