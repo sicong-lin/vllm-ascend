@@ -345,15 +345,15 @@ class AscendAttentionMetadataBuilder:
         attn_state: AscendAttentionState = AscendAttentionState.DecodeOnly,
         model: Optional[nn.Module] = None,
     ):
-        if attn_state == AscendAttentionState.DecodeOnly:
-            attn_metadata = self.build(
-                common_prefix_len=0,
-                common_attn_metadata=common_attn_metadata,
-            )
-        else:
-            raise NotImplementedError(
-                "Currently we only support building dummy metadata for DecodeOnly state"
-            )
+        # if attn_state == AscendAttentionState.DecodeOnly:
+        attn_metadata = self.build(
+            common_prefix_len=0,
+            common_attn_metadata=common_attn_metadata,
+        )
+        # else:
+        #     raise NotImplementedError(
+        #         "Currently we only support building dummy metadata for DecodeOnly state"
+        #     )
 
         attn_metadata.attn_state = attn_state
         return attn_metadata
@@ -546,7 +546,7 @@ class AscendAttentionBackendImpl(AttentionImpl):
             sparse_mode=3,
         )
 
-        attn_output = attn_output.view(num_tokens, self.num_heads,
+        attn_output = attn_output.view(-1, self.num_heads,
                                        self.head_size)
         output[:num_tokens] = attn_output[:num_tokens]
         return output

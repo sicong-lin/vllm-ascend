@@ -77,7 +77,7 @@ def _rope_forward_oot(
                                        sin,
                                        rope_dim=self.rotary_dim,
                                        is_neox_style=is_neox_style)
-            return q, k
+            return q.view(query_shape), k.view(key_shape)
         if self.cos is not None and \
             self.sin is not None:
             # If cos and sin are generated outside, use npu_apply_rotary_pos_emb to avoid redundant calculation.
