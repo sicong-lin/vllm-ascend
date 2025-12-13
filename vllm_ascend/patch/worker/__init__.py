@@ -24,6 +24,7 @@ if HAS_TRITON:
 import vllm_ascend.patch.platform.patch_sched_yield  # noqa
 import vllm_ascend.patch.worker.patch_distributed  # noqa
 import vllm_ascend.patch.worker.patch_deepseek  # noqa
+import vllm_ascend.patch.worker.patch_glm4_moe # noqa
 import vllm_ascend.patch.worker.patch_roberta  # noqa
 import vllm_ascend.patch.worker.patch_weight_loader  # noqa
 import vllm_ascend.patch.worker.patch_multimodal_merge  # noqa
