@@ -152,7 +152,7 @@ class MoECommMethod(ABC):
                                        topk_scales=topk_scales,
                                        with_quant=use_int8_w8a8
                                        or use_int4_w4a8 or use_int4_w4a16,
-                                       fusion=use_int8_w8a8,
+                                       fusion=False,
                                        need_trans=need_trans,
                                        dynamic_eplb=dynamic_eplb)
 
