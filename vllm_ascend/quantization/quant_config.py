@@ -173,7 +173,10 @@ class AscendQuantConfig(QuantizationConfig):
                         "are quantized. All shards of fused layers "
                         "to have the same precision.")
         else:
-            is_skipped = self.quant_description[prefix + '.weight'] == "FLOAT"
+            if prefix + '.weight' not in self.quant_description and ".head" in prefix:
+                is_skipped = self.quant_description['lm_head.weight'] == "FLOAT"
+            else:
+                is_skipped = self.quant_description[prefix + '.weight'] == "FLOAT"
 
         assert is_skipped is not None
         return is_skipped

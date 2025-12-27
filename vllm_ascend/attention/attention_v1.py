@@ -263,7 +263,11 @@ class AscendAttentionMetadataBuilder:
         attn_state: AscendAttentionState = AscendAttentionState.DecodeOnly,
         model: Optional[nn.Module] = None,
     ):
-        if attn_state == AscendAttentionState.DecodeOnly:
+        if attn_state in [
+            AscendAttentionState.DecodeOnly,
+            AscendAttentionState.ChunkedPrefill,
+            AscendAttentionState.SpecDecoding,
+        ]:
             attn_metadata = self.build(
                 common_prefix_len=0,
                 common_attn_metadata=common_attn_metadata,
